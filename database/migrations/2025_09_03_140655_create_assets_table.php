@@ -24,7 +24,7 @@ return new class extends Migration
             $table->unsignedBigInteger('department_id');
             $table->boolean('inactive')->default(false);
             $table->boolean('registered_esbye')->default(false);
-            $table->string('comments')->nullable();
+            $table->text('comments')->nullable();
             $table->string('origin')->nullable();
             $table->softDeletes();
 

@@ -13,7 +13,7 @@ class Asset extends Model
     /** @use HasFactory<\Database\Factories\AssetFactory> */
     use HasFactory, SoftDeletes;
 
-    public function details()
+    public function transactionDetails()
     {
         return $this->hasMany(TransactionDetail::class);
     }

@@ -16,7 +16,7 @@ return new class extends Migration
 
             $table->unsignedBigInteger('transaction_id');
             $table->unsignedBigInteger('asset_id');
-            $table->string('comments')->nullable();
+            $table->text('comments')->nullable();
 
             $table->foreign('transaction_id')->references('id')->on('transactions');
             $table->foreign('asset_id')->references('id')->on('assets');
