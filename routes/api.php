@@ -1,23 +1,30 @@
 <?php
 
-use App\Http\Api\Controllers\TransactionTypeController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Api\Controllers\AssetController;
-use App\Http\Api\Controllers\DepartmentController;
-use App\Http\Api\Controllers\EmployeeController;
-use App\Http\Api\Controllers\EodController;
-use App\Http\Api\Controllers\TransactionController;
-
-// Route::get('/user', function (Request $request) {
-//     return $request->user();
-// })->middleware('auth:sanctum');
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\AssetController;
+use App\Http\Controllers\Api\DepartmentController;
+use App\Http\Controllers\Api\EmployeeController;
+use App\Http\Controllers\Api\EodController;
+use App\Http\Controllers\Api\TransactionController;
+use App\Http\Controllers\Api\TransactionTypeController;
 
 Route::prefix('v1')->group(function () {
-    Route::apiResource('assets', AssetController::class);
-    Route::apiResource('departments', DepartmentController::class);
-    Route::apiResource('employees', EmployeeController::class);
-    Route::apiResource('eods', EodController::class);
-    Route::apiResource('transactions', TransactionController::class);
-    Route::apiResource('transaction_types', TransactionTypeController::class);
+    Route::get('/', function () {
+        return response()->json(['message' => 'API de Gestión de Activos - Versión 1']);
+    });
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/register', [AuthController::class, 'register']);
+
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/logout', [AuthController::class, 'logout']);
+        Route::post('/change-password', [AuthController::class, 'changePassword']);
+
+        Route::apiResource('assets', AssetController::class);
+        Route::apiResource('departments', DepartmentController::class);
+        Route::apiResource('employees', EmployeeController::class);
+        Route::apiResource('eods', EodController::class);
+        Route::apiResource('transactions', TransactionController::class);
+        Route::apiResource('transaction_types', TransactionTypeController::class);
+    });
 });
