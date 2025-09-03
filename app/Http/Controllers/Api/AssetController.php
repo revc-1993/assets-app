@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Models\Asset;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\AssetRequest;
 
 class AssetController extends Controller
 {
@@ -25,53 +26,21 @@ class AssetController extends Controller
     }
 
     // Crear un nuevo bien
-    public function store(Request $request)
+    public function store(AssetRequest $request)
     {
-        $validated = $request->validate([
-            'esbye_code' => 'required|integer|unique:assets,esbye_code',
-            'description' => 'required|string|max:200',
-            'serie' => 'nullable|string|max:80',
-            'model' => 'nullable|string|max:70',
-            'condition' => 'nullable|string|max:40',
-            'book_value' => 'nullable|numeric',
-            'employee_id' => 'nullable|exists:employees,id',
-            'department_id' => 'required|exists:departments,id',
-            'inactive' => 'boolean',
-            'registered_esbye' => 'boolean',
-            'comments' => 'nullable|string',
-            'origin' => 'nullable|string',
-            // Agrega otras validaciones según tu modelo
-        ]);
-
-        $asset = Asset::create($validated);
+        $asset = Asset::create($request->validated());
         return response()->json($asset, 201);
     }
 
     // Actualizar un bien existente
-    public function update(Request $request, $id)
+    public function update(Request $request, int $id)
     {
         $asset = Asset::find($id);
         if (!$asset) {
             return response()->json(['message' => 'Bien no encontrado'], 404);
         }
 
-        $validated = $request->validate([
-            'esbye_code' => 'sometimes|required|integer|unique:assets,esbye_code,' . $asset->id,
-            'description' => 'sometimes|required|string|max:200',
-            'serie' => 'nullable|string|max:80',
-            'model' => 'nullable|string|max:70',
-            'condition' => 'nullable|string|max:40',
-            'book_value' => 'nullable|numeric',
-            'employee_id' => 'nullable|exists:employees,id',
-            'department_id' => 'sometimes|required|exists:departments,id',
-            'inactive' => 'boolean',
-            'registered_esbye' => 'boolean',
-            'comments' => 'nullable|string',
-            'origin' => 'nullable|string',
-            // Agrega otras validaciones según tu modelo
-        ]);
-
-        $asset->update($validated);
+        $asset->update($request->validated());
         return response()->json($asset);
     }
 

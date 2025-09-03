@@ -16,6 +16,10 @@ class Transaction extends Model
     /** @use HasFactory<\Database\Factories\TransactionFactory> */
     use HasFactory, SoftDeletes;
 
+    protected $fillable = [
+        'sequence_number',
+    ];
+
     public function transactionDetails()
     {
         return $this->hasMany(TransactionDetail::class);

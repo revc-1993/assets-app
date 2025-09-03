@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
 
             $table->unsignedBigInteger('transaction_type_id');
+            $table->unsignedInteger('sequence_number');
             $table->string('request');
             $table->date('transaction_date');
 
