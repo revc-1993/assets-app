@@ -16,8 +16,25 @@ class Transaction extends Model
     /** @use HasFactory<\Database\Factories\TransactionFactory> */
     use HasFactory, SoftDeletes;
 
+    /**
+     * Atributos que se pueden asignar de forma masiva.
+     *
+     * @var array<int, string>
+     */
     protected $fillable = [
+        'transaction_type_id',
         'sequence_number',
+        'request',
+        'transaction_date',
+        'verification_id',
+        'custodian_id',
+        'responsible_giza_id',
+        'responsible_gafyb_id',
+        'delivery_id',
+        'receive_id',
+        'registered_esbye',
+        'comments',
+        'department_id',
     ];
 
     public function transactionDetails()

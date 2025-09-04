@@ -9,4 +9,13 @@ class TransactionType extends Model
 {
     /** @use HasFactory<\Database\Factories\TransactionTypeFactory> */
     use HasFactory;
+
+    /**
+     * Atributos que se pueden asignar de forma masiva.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'type_name',
+    ];
 }

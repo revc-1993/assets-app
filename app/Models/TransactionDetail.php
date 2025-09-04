@@ -13,6 +13,17 @@ class TransactionDetail extends Model
     /** @use HasFactory<\Database\Factories\TransactionDetailFactory> */
     use HasFactory, SoftDeletes;
 
+    /**
+     * Atributos que se pueden asignar de forma masiva.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'transaction_id',
+        'asset_id',
+        'comments',
+    ];
+
     public function transaction()
     {
         return $this->belongsTo(Transaction::class);

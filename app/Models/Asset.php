@@ -10,6 +10,26 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Asset extends Model
 {
+    /**
+     * Atributos que se pueden asignar de forma masiva.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'esbye_code',
+        'description',
+        'serie',
+        'model',
+        'condition',
+        'book_value',
+        'employee_id',
+        'department_id',
+        'inactive',
+        'registered_esbye',
+        'comments',
+        'origin',
+    ];
+
     /** @use HasFactory<\Database\Factories\AssetFactory> */
     use HasFactory, SoftDeletes;
 

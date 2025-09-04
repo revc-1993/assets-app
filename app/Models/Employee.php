@@ -13,6 +13,20 @@ class Employee extends Model
     /** @use HasFactory<\Database\Factories\EmployeeFactory> */
     use HasFactory, SoftDeletes;
 
+    /**
+     * Atributos que se pueden asignar de forma masiva.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'dni',
+        'first_names',
+        'last_names',
+        'names',
+        'position',
+        'department_id',
+    ];
+
     public function department()
     {
         return $this->belongsTo(Department::class);
