@@ -56,10 +56,14 @@ class TransactionController extends Controller
             return response()->json(['message' => 'Transacción no encontrada'], 404);
         }
 
-        $transaction = $request->validated();
-        $transaction['action'] = $validated['action'] ?? 'edited';
+        $data = $request->validated();
+        $data['action'] = $data['action'] ?? 'updated';
 
-        $transaction->update($transaction);
-        return response()->json($transaction);
+        $items = $request['items'] ?? [];
+
+        // Llama al servicio para manejar la lógica de actualización.
+        $updatedTransaction = $this->service->updateTransaction($transaction, $data, $items);
+
+        return response()->json($updatedTransaction, 200);
     }
 }

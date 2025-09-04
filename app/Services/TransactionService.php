@@ -10,6 +10,13 @@ use App\Enums\TransactionTypeConstants as TransactionTypes;
 
 class TransactionService
 {
+    /**
+     * Almacena una nueva transacción y sus detalles, actualizando el estado de los bienes.
+     *
+     * @param array $data Datos de la transacción.
+     * @param array $items Detalles de los bienes.
+     * @return Transaction
+     */
     public function storeTransaction(array $data, array $items)
     {
         return DB::transaction(function () use ($data, $items) {
@@ -19,12 +26,12 @@ class TransactionService
             $transaction = Transaction::create($data);
 
             foreach ($items as $item) {
-                $detail = new TransactionDetail([
+                $transactionDetail = new TransactionDetail([
                     'transaction_id' => $transaction['id'],
                     'asset_id'       => $item['asset_id'],
                     'comments'       => $item['comments'] ?? '',
                 ]);
-                $detail->save();
+                $transactionDetail->save();
 
                 // Lógica según tipo de transacción
                 $this->processAsset($transaction['transaction_type_id'], $item, $transaction);
@@ -34,6 +41,48 @@ class TransactionService
         });
     }
 
+    /**
+     * Actualiza una transacción existente.
+     *
+     * @param Transaction $transaction La instancia de la transacción a actualizar.
+     * @param array $data Los datos validados para la transacción.
+     * @param array $items Los ítems de la transacción para reemplazar.
+     * @return Transaction
+     */
+    public function updateTransaction(Transaction $transaction, array $data, array $items)
+    {
+        return DB::transaction(function () use ($transaction, $data, $items) {
+            // Actualiza los datos principales de la transacción.
+            $transaction->update($data);
+
+            // Elimina todos los detalles existentes para re-crearlos.
+            $transaction->transactionDetails()->delete();
+
+            // Vuelve a crear los detalles de la transacción.
+            foreach ($items as $item) {
+                $transactionDetail = new TransactionDetail([
+                    'transaction_id' => $transaction['id'],
+                    'asset_id'       => $item['asset_id'],
+                    'comments'       => $item['comments'] ?? '',
+                ]);
+                $transactionDetail->save();
+
+                // Procesa el bien asociado según el tipo de transacción.
+                $this->processAsset($transaction->transaction_type_id, $item, $transaction);
+            }
+
+            return $transaction->load('transactionDetails');
+        });
+    }
+
+    /**
+     * Procesa el bien (Asset) según el tipo de transacción.
+     *
+     * @param int $typeId El ID del tipo de transacción.
+     * @param array $item Los datos del detalle de la transacción para el bien.
+     * @param Transaction $transaction La transacción completa.
+     * @return void
+     */
     protected function processAsset($typeId, $item, $transaction)
     {
         // Puedes usar constantes o IDs fijos para los tipos
@@ -79,8 +128,14 @@ class TransactionService
         }
     }
 
-    // ************ UTILS ************
+    // ******************** UTILS ********************
 
+    /**
+     * Obtiene el siguiente número de secuencia para un tipo de transacción.
+     *
+     * @param int $transactionTypeId
+     * @return int
+     */
     protected function getNextSequenceNumber(int $transactionTypeId)
     {
         $lastNumber = Transaction::where('transaction_type_id', $transactionTypeId)
