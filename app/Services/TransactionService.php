@@ -20,17 +20,17 @@ class TransactionService
 
             foreach ($items as $item) {
                 $detail = new TransactionDetail([
-                    'transaction_id' => $transaction->id,
+                    'transaction_id' => $transaction['id'],
                     'asset_id'       => $item['asset_id'],
-                    'comments'       => $item['comments'] ?? null,
+                    'comments'       => $item['comments'] ?? '',
                 ]);
                 $detail->save();
 
                 // Lógica según tipo de transacción
-                $this->processAsset($transaction->transaction_type_id, $item, $transaction);
+                $this->processAsset($transaction['transaction_type_id'], $item, $transaction);
             }
 
-            return $transaction->load('details');
+            return $transaction->load('transactionDetails');
         });
     }
 
@@ -69,11 +69,11 @@ class TransactionService
                 $asset->save();
                 break;
             case TransactionTypes::TYPE_ASSIGNMENT: // Encargo
-                $asset['custodian_id'] = $transaction['custodian_id'];
+                $asset['employee_id'] = $transaction['custodian_id'];
                 $asset->save();
                 break;
             case TransactionTypes::TYPE_DISCHARGE: // Descargo
-                $asset['custodian_id'] = null;
+                $asset['employee_id'] = null;
                 $asset->save();
                 break;
         }
