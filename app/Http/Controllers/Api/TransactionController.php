@@ -3,13 +3,20 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Transaction;
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Services\TransactionService;
 use App\Http\Requests\TransactionStoreRequest;
 use App\Http\Requests\TransactionUpdateRequest;
 
 class TransactionController extends Controller
 {
+    protected $service;
+
+    public function __construct(TransactionService $service)
+    {
+        $this->service = $service;
+    }
+
     // Listar todas las transacciones
     public function index()
     {
@@ -29,20 +36,15 @@ class TransactionController extends Controller
     // Crear una nueva transacción
     public function store(TransactionStoreRequest $request)
     {
-        $transaction = $request->validated();
+        $data = $request->validated();
 
-        // Obtener el siguiente número para el tipo de transacción
-        $lastNumber = Transaction::where(
-            'transaction_type_id',
-            $transaction['transaction_type_id']
-        )
-            ->max('sequence_number');
-        $transaction['sequence_number'] = $lastNumber ? $lastNumber + 1 : 1;
+        $data['created_by'] = $request->user->id ?? null;
+        $data['action'] = $data['action'] ?? 'created';
 
-        $transaction['created_by'] = $request->user->id ?? null;
-        $transaction['action'] = $transaction['action'] ?? 'created';
+        $items = $request['items'] ?? [];
 
-        $transaction = Transaction::create($transaction);
+        $transaction = $this->service->storeTransaction($data, $items);
+
         return response()->json($transaction, 201);
     }
 
