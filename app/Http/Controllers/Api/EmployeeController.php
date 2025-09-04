@@ -4,10 +4,40 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\Employee;
 use Illuminate\Http\Request;
+use App\Services\EmployeeService;
 use App\Http\Controllers\Controller;
 
 class EmployeeController extends Controller
 {
+    /**
+     * @var EmployeeService
+     */
+    protected EmployeeService $employeeService;
+
+    public function __construct(EmployeeService $employeeService)
+    {
+        $this->employeeService = $employeeService;
+    }
+
+    /**
+     * Busca un empleado por cédula o nombre.
+     *
+     * @param string $searchTerm
+     * @return JsonResponse
+     */
+    public function search(string $searchTerm)
+    {
+        $employee = $this->employeeService->findEmployeeByDniOrName($searchTerm);
+
+        if (!$employee) {
+            return response()->json(['message' => 'Empleado no encontrado'], 404);
+        }
+
+        return response()->json($employee, 200);
+    }
+
+    // *************** CRUD BÁSICO PARA BIENES ***************
+
     // Listar todos los empleados
     public function index()
     {
