@@ -20,13 +20,31 @@ class TransactionController extends Controller
     // Listar todas las transacciones
     public function index()
     {
-        return response()->json(Transaction::all());
+        $transactions = Transaction::with([
+            'transaction:id,type_name',
+            'transactionType:id,type_name',
+            'department:id,department_name,location',
+            'custodian:id,names',
+            'responsibleGiza:id,names',
+            'responsibleGafyb:id,names',
+            'transactionDetails.asset:id,esbye_code,serie,description,model,condition'
+        ])->get();
+
+        return response()->json($transactions);
     }
 
     // Mostrar una transacción específica
     public function show(int $id)
     {
-        $transaction = Transaction::find($id);
+        $transaction = Transaction::with([
+            'transactionType:id,type_name',
+            'department:id,department_name,location',
+            'custodian:id,names',
+            'responsibleGiza:id,names',
+            'responsibleGafyb:id,names',
+            'transactionDetails.asset:id,esbye_code,serie,description,model,condition,book_value,employee_id,department_id,inactive,registered_esbye,comments,origin'
+        ])->find($id);
+
         if (!$transaction) {
             return response()->json(['message' => 'Transacción no encontrada'], 404);
         }

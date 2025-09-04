@@ -4,55 +4,83 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\Asset;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
+use App\Services\AssetService;
 use App\Http\Requests\AssetRequest;
+use App\Http\Controllers\Controller;
 
 class AssetController extends Controller
 {
-    // Listar todos los bienes
-    public function index()
+
+    protected $assetService;
+
+    public function __construct(AssetService $assetService)
     {
-        return response()->json(Asset::all());
+        $this->assetService = $assetService;
     }
 
-    // Mostrar un bien específico
-    public function show(int $id)
+    /**
+     * Busca un bien por su código ESBYE o número de serie.
+     *
+     * @param string $searchTerm
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function search(string $searchTerm)
     {
-        $asset = Asset::find($id);
+        $asset = $this->assetService->findAssetByCodeOrSerie($searchTerm);
+
         if (!$asset) {
             return response()->json(['message' => 'Bien no encontrado'], 404);
         }
+
         return response()->json($asset);
     }
 
-    // Crear un nuevo bien
-    public function store(AssetRequest $request)
-    {
-        $asset = Asset::create($request->validated());
-        return response()->json($asset, 201);
-    }
+    // *************** CRUD BÁSICO PARA BIENES ***************
 
-    // Actualizar un bien existente
-    public function update(Request $request, int $id)
-    {
-        $asset = Asset::find($id);
-        if (!$asset) {
-            return response()->json(['message' => 'Bien no encontrado'], 404);
-        }
+    // // Listar todos los bienes
+    // public function index()
+    // {
+    //     return response()->json(Asset::all());
+    // }
 
-        $asset->update($request->validated());
-        return response()->json($asset);
-    }
+    // // Mostrar un bien específico
+    // public function show(int $id)
+    // {
+    //     $asset = Asset::find($id);
+    //     if (!$asset) {
+    //         return response()->json(['message' => 'Bien no encontrado'], 404);
+    //     }
+    //     return response()->json($asset);
+    // }
 
-    // Eliminar un bien
-    public function destroy(int $id)
-    {
-        $asset = Asset::find($id);
-        if (!$asset) {
-            return response()->json(['message' => 'Bien no encontrado'], 404);
-        }
+    // // Crear un nuevo bien
+    // public function store(AssetRequest $request)
+    // {
+    //     $asset = Asset::create($request->validated());
+    //     return response()->json($asset, 201);
+    // }
 
-        $asset->delete();
-        return response()->json(['message' => 'Bien eliminado']);
-    }
+    // // Actualizar un bien existente
+    // public function update(Request $request, int $id)
+    // {
+    //     $asset = Asset::find($id);
+    //     if (!$asset) {
+    //         return response()->json(['message' => 'Bien no encontrado'], 404);
+    //     }
+
+    //     $asset->update($request->validated());
+    //     return response()->json($asset);
+    // }
+
+    // // Eliminar un bien
+    // public function destroy(int $id)
+    // {
+    //     $asset = Asset::find($id);
+    //     if (!$asset) {
+    //         return response()->json(['message' => 'Bien no encontrado'], 404);
+    //     }
+
+    //     $asset->delete();
+    //     return response()->json(['message' => 'Bien eliminado']);
+    // }
 }

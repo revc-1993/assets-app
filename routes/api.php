@@ -20,6 +20,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::post('/change-password', [AuthController::class, 'changePassword']);
 
+        Route::get('assets/search/{searchTerm}', [AssetController::class, 'search'])->name('assets.search');
         Route::apiResource('assets', AssetController::class);
         Route::apiResource('departments', DepartmentController::class);
         Route::apiResource('employees', EmployeeController::class);

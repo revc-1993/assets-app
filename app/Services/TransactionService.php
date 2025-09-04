@@ -11,6 +11,21 @@ use App\Enums\TransactionTypeConstants as TransactionTypes;
 class TransactionService
 {
     /**
+     * @var AssetService
+     */
+    protected AssetService $assetService;
+
+    /**
+     * Inyecta el AssetService en el constructor.
+     *
+     * @param AssetService $assetService
+     */
+    public function __construct(AssetService $assetService)
+    {
+        $this->assetService = $assetService;
+    }
+
+    /**
      * Almacena una nueva transacción y sus detalles, actualizando el estado de los bienes.
      *
      * @param array $data Datos de la transacción.
@@ -28,13 +43,13 @@ class TransactionService
             foreach ($items as $item) {
                 $transactionDetail = new TransactionDetail([
                     'transaction_id' => $transaction['id'],
-                    'asset_id'       => $item['asset_id'],
+                    'asset_id'       => $item['asset_id'] ?? null,
                     'comments'       => $item['comments'] ?? '',
                 ]);
                 $transactionDetail->save();
 
-                // Lógica según tipo de transacción
-                $this->processAsset($transaction['transaction_type_id'], $item, $transaction);
+                // Lógica para procesar el bien, ahora en el AssetService
+                $this->assetService->processAsset($transaction['transaction_type_id'], $item, $transaction);
             }
 
             return $transaction->load('transactionDetails');
@@ -52,9 +67,6 @@ class TransactionService
     public function updateTransaction(Transaction $transaction, array $data, array $items)
     {
         return DB::transaction(function () use ($transaction, $data, $items) {
-            // Actualiza los datos principales de la transacción.
-            $transaction->update($data);
-
             // Elimina todos los detalles existentes para re-crearlos.
             $transaction->transactionDetails()->delete();
 
@@ -62,70 +74,20 @@ class TransactionService
             foreach ($items as $item) {
                 $transactionDetail = new TransactionDetail([
                     'transaction_id' => $transaction['id'],
-                    'asset_id'       => $item['asset_id'],
+                    'asset_id'       => $item['asset_id'] ?? null,
                     'comments'       => $item['comments'] ?? '',
                 ]);
                 $transactionDetail->save();
 
-                // Procesa el bien asociado según el tipo de transacción.
-                $this->processAsset($transaction->transaction_type_id, $item, $transaction);
+                // Procesa el bien asociado según el tipo de transacción, ahora en el AssetService
+                $this->assetService->processAsset($transaction['transaction_type_id'], $item, $transaction);
             }
+
+            // Actualiza los datos principales de la transacción.
+            $transaction->update($data);
 
             return $transaction->load('transactionDetails');
         });
-    }
-
-    /**
-     * Procesa el bien (Asset) según el tipo de transacción.
-     *
-     * @param int $typeId El ID del tipo de transacción.
-     * @param array $item Los datos del detalle de la transacción para el bien.
-     * @param Transaction $transaction La transacción completa.
-     * @return void
-     */
-    protected function processAsset($typeId, $item, $transaction)
-    {
-        // Puedes usar constantes o IDs fijos para los tipos
-        // Ejemplo: 1=Ingreso, 2=Ajuste, 3=Encargo, 4=Descargo
-        $asset = Asset::find($item['asset_id']);
-        if (!$asset) {
-            // Si el bien no existe y el tipo de transacción es Ingreso, lo creamos.
-            if ($typeId == TransactionTypes::TYPE_INCOME) {
-                Asset::create([
-                    'esbye_code'  => $item['esbye_code'],
-                    'description' => $item['description'] ?? '',
-                    'serie' => $item['serie'] ?? '',
-                    'model' => $item['model'] ?? '',
-                    'condition' => $item['condition'] ?? '',
-                    'book_value' => $item['book_value'] ?? 0,
-                    'employee_id' => $item['employee_id'] ?? null,
-                    'department_id' => $item['department_id'] ?? null,
-                    'inactive'      => false, // Suponemos que al ingresar un bien, está activo.
-                    'registered_esbye' => false,
-                    'comments' => $item['comments'] ?? '',
-                    'origin' => $item['origin'] ?? '',
-                ]);
-            }
-            return;
-        }
-
-        switch ($typeId) {
-            case TransactionTypes::TYPE_INCOME: // Ingreso
-                // La lógica de creación ya está manejada arriba.
-                break;
-            case TransactionTypes::TYPE_ADJUSTMENT: // Ajuste
-                $asset['inactive'] = true;
-                $asset->save();
-                break;
-            case TransactionTypes::TYPE_ASSIGNMENT: // Encargo
-                $asset['employee_id'] = $transaction['custodian_id'];
-                $asset->save();
-                break;
-            case TransactionTypes::TYPE_DISCHARGE: // Descargo
-                $asset['employee_id'] = null;
-                $asset->save();
-                break;
-        }
     }
 
     // ******************** UTILS ********************

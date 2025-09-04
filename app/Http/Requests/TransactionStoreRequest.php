@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Asset;
 use Illuminate\Foundation\Http\FormRequest;
 
 class TransactionStoreRequest extends FormRequest
@@ -34,6 +35,56 @@ class TransactionStoreRequest extends FormRequest
             'comments'               => ['nullable', 'string'],
             'department_id'          => ['required', 'exists:departments,id'],
             'action'                 => ['in:created,edited'],
+            'items' => [
+                'required',
+                'array',
+                function ($attribute, $value, $fail) {
+                    $this->validateAssetUniqueness($value, $fail);
+                },
+            ],
+            'items.*.esbye_code' => ['nullable', 'string', 'max:255', 'required_without:items.*.serie'],
+            'items.*.serie'      => ['nullable', 'string', 'max:255', 'required_without:items.*.esbye_code'],
+            'items.*.comments'   => ['nullable', 'string'],
         ];
+    }
+
+    /**
+     * Valida la unicidad de los bienes en la base de datos y en la misma petición.
+     *
+     * @param array $items
+     * @param \Closure $fail
+     */
+    private function validateAssetUniqueness(array $items, \Closure $fail)
+    {
+        $seenCombinations = [];
+
+        foreach ($items as $index => $item) {
+            $esbyeCode = $item['esbye_code'] ?? null;
+            $serie = $item['serie'] ?? null;
+
+            if ($esbyeCode) {
+                // Validar unicidad dentro del mismo request
+                if (in_array($esbyeCode, $seenCombinations)) {
+                    $fail("El código ESBYE '{$esbyeCode}' está duplicado en la lista de ítems.");
+                }
+                $seenCombinations[] = $esbyeCode;
+
+                // Validar en la base de datos
+                if (Asset::where('esbye_code', $esbyeCode)->exists()) {
+                    $fail("El bien con el código ESBYE '{$esbyeCode}' ya está registrado.");
+                }
+            } elseif ($serie) {
+                // Validar unicidad dentro del mismo request
+                if (in_array($serie, $seenCombinations)) {
+                    $fail("La serie '{$serie}' está duplicada en la lista de ítems.");
+                }
+                $seenCombinations[] = $serie;
+
+                // Validar en la base de datos
+                if (Asset::where('serie', $serie)->exists()) {
+                    $fail("El bien con la serie '{$serie}' ya está registrado.");
+                }
+            }
+        }
     }
 }
