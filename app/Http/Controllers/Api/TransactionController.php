@@ -54,16 +54,19 @@ class TransactionController extends Controller
     // Crear una nueva transacción
     public function store(TransactionStoreRequest $request)
     {
-        $data = $request->validated();
+        dd($request);
+        // return response()->json(['message' => 'Creación de transacciones deshabilitada temporalmente'], 503);
 
-        $data['created_by'] = $request->user->id ?? null;
-        $data['action'] = $data['action'] ?? 'created';
+        // $data = $request->validated();
 
-        $items = $request['items'] ?? [];
+        // $data['created_by'] = $request->user->id ?? null;
+        // $data['action'] = $data['action'] ?? 'created';
 
-        $transaction = $this->service->storeTransaction($data, $items);
+        // $items = $request['items'] ?? [];
 
-        return response()->json($transaction, 201);
+        // $transaction = $this->service->storeTransaction($data, $items);
+
+        // return response()->json($transaction, 201);
     }
 
     // Actualizar una transacción existente
