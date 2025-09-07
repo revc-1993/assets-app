@@ -2,10 +2,9 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
 use App\Enums\TransactionTypeConstants as TransactionTypes;
 
-class TransactionUpdateRequest extends FormRequest
+class TransactionUpdateRequest extends BaseFormRequest
 {
     /**
      * Determine if the user is authorized to make this request.

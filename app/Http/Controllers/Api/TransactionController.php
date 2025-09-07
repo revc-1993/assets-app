@@ -7,10 +7,12 @@ use App\Http\Controllers\Controller;
 use App\Services\TransactionService;
 use App\Http\Requests\TransactionStoreRequest;
 use App\Http\Requests\TransactionUpdateRequest;
+use App\Traits\ApiResponse;
 
 class TransactionController extends Controller
 {
-    protected $service;
+    use ApiResponse;
+    protected TransactionService $service;
 
     public function __construct(TransactionService $service)
     {
@@ -46,27 +48,24 @@ class TransactionController extends Controller
         ])->find($id);
 
         if (!$transaction) {
-            return response()->json(['message' => 'Transacción no encontrada'], 404);
+            return $this->errorResponse(null, 'Transacción no encontrada', 404);
         }
-        return response()->json($transaction);
+
+        return $this->successResponse($transaction, 'Transacción encontrada');
     }
 
     // Crear una nueva transacción
     public function store(TransactionStoreRequest $request)
     {
-        dd($request);
-        // return response()->json(['message' => 'Creación de transacciones deshabilitada temporalmente'], 503);
+        $data = $request->validated();
+        $data['created_by'] = $request->user->id ?? null;
+        $data['action'] = $data['action'] ?? 'created';
 
-        // $data = $request->validated();
+        $items = $request['items'] ?? [];
 
-        // $data['created_by'] = $request->user->id ?? null;
-        // $data['action'] = $data['action'] ?? 'created';
+        $transaction = $this->service->storeTransaction($data, $items);
 
-        // $items = $request['items'] ?? [];
-
-        // $transaction = $this->service->storeTransaction($data, $items);
-
-        // return response()->json($transaction, 201);
+        return $this->successResponse($transaction, 'Transacción creada exitosamente', 201);
     }
 
     // Actualizar una transacción existente

@@ -3,9 +3,8 @@
 namespace App\Http\Requests;
 
 use App\Models\Asset;
-use Illuminate\Foundation\Http\FormRequest;
 
-class TransactionStoreRequest extends FormRequest
+class TransactionStoreRequest extends BaseFormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -42,8 +41,7 @@ class TransactionStoreRequest extends FormRequest
                     $this->validateAssetUniqueness($value, $fail);
                 },
             ],
-            'items.*.esbye_code' => ['nullable', 'string', 'max:255', 'required_without:items.*.serie'],
-            'items.*.serie'      => ['nullable', 'string', 'max:255', 'required_without:items.*.esbye_code'],
+            'items.*.asset_id' => ['required', 'exists:assets,id'],
             'items.*.comments'   => ['nullable', 'string'],
         ];
     }
