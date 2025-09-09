@@ -24,7 +24,7 @@ class TransactionStoreRequest extends BaseFormRequest
         return [
             'transaction_type_id'    => ['required', 'exists:transaction_types,id'],
             'request'                => ['required', 'string', 'max:255'],
-            'transaction_date'       => ['required', 'date'],
+            'transaction_date'       => ['required', 'date_format:Y-m-d'],
             'verification_id'        => ['nullable', 'exists:employees,id'],
             'custodian_id'           => ['nullable', 'exists:employees,id'],
             'responsible_giza_id'    => ['nullable', 'exists:employees,id'],

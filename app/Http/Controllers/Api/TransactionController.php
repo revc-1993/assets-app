@@ -23,16 +23,20 @@ class TransactionController extends Controller
     public function index()
     {
         $transactions = Transaction::with([
-            'transaction:id,type_name',
             'transactionType:id,type_name',
             'department:id,department_name,location',
+            'verification:id,names',
             'custodian:id,names',
             'responsibleGiza:id,names',
             'responsibleGafyb:id,names',
             'transactionDetails.asset:id,esbye_code,serie,description,model,condition'
         ])->get();
 
-        return response()->json($transactions);
+        if ($transactions->isEmpty()) {
+            return $this->errorResponse(null, 'Transacciones no encontradas', 404);
+        }
+
+        return $this->successResponse($transactions, 'Transacciones encontradas');
     }
 
     // Mostrar una transacción específica
@@ -41,6 +45,7 @@ class TransactionController extends Controller
         $transaction = Transaction::with([
             'transactionType:id,type_name',
             'department:id,department_name,location',
+            'verification:id,names',
             'custodian:id,names',
             'responsibleGiza:id,names',
             'responsibleGafyb:id,names',
@@ -58,7 +63,7 @@ class TransactionController extends Controller
     public function store(TransactionStoreRequest $request)
     {
         $data = $request->validated();
-        $data['created_by'] = $request->user->id ?? null;
+        $data['created_by'] = $request->user()->id ?? null;
         $data['action'] = $data['action'] ?? 'created';
 
         $items = $request['items'] ?? [];
@@ -73,7 +78,7 @@ class TransactionController extends Controller
     {
         $transaction = Transaction::find($id);
         if (!$transaction) {
-            return response()->json(['message' => 'Transacción no encontrada'], 404);
+            return $this->errorResponse(null, 'Transacción no encontrada', 404);
         }
 
         $data = $request->validated();
@@ -84,6 +89,6 @@ class TransactionController extends Controller
         // Llama al servicio para manejar la lógica de actualización.
         $updatedTransaction = $this->service->updateTransaction($transaction, $data, $items);
 
-        return response()->json($updatedTransaction, 200);
+        return $this->successResponse($updatedTransaction, 'Transacción actualizada exitosamente', 200);
     }
 }

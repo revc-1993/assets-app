@@ -4,6 +4,7 @@ namespace App\Exceptions;
 
 use Throwable;
 use App\Traits\ApiResponse;
+use Illuminate\Database\QueryException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -16,34 +17,31 @@ class Handler extends ExceptionHandler
 
     public function render($request, Throwable $e)
     {
-        // 🔹 Para errores de validación (ya controlados en BaseFormRequest)
+        // Validación
         if ($e instanceof ValidationException) {
-            return $this->errorResponse(
-                $e->errors(),
-                'Errores de validación',
-                422
-            );
+            return $this->errorResponse($e->errors(), 'Errores de validación', 422);
         }
 
-        // 🔹 Cuando no encuentra un modelo
+        // Modelo no encontrado
         if ($e instanceof ModelNotFoundException) {
-            return $this->errorResponse(
-                null,
-                'Recurso no encontrado',
-                404
-            );
+            return $this->errorResponse(null, 'Recurso no encontrado', 404);
         }
 
-        // 🔹 Cuando no está autenticado
+        // No autenticado
         if ($e instanceof AuthenticationException) {
+            return $this->errorResponse(null, 'No autenticado', 401);
+        }
+
+        // Errores de BD
+        if ($e instanceof QueryException) {
             return $this->errorResponse(
-                null,
-                'No autenticado',
-                401
+                config('app.debug') ? $e->getMessage() : 'Error en la base de datos',
+                'Error en la base de datos',
+                500
             );
         }
 
-        // 🔹 Para cualquier otro error no manejado
+        // Cualquier otro error
         return $this->errorResponse(
             config('app.debug') ? $e->getMessage() : 'Error interno del servidor',
             'Error interno',

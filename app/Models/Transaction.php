@@ -32,9 +32,9 @@ class Transaction extends Model
         'responsible_gafyb_id',
         'delivery_id',
         'receive_id',
-        'registered_esbye',
         'comments',
         'department_id',
+        'created_by',
     ];
 
     public function transactionDetails()
