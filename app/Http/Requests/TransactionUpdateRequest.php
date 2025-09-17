@@ -45,10 +45,12 @@ class TransactionUpdateRequest extends BaseFormRequest
                 'required',
                 'array',
                 function ($attribute, $value, $fail) {
-                    $this->validateUniqueItems($attribute, $value, $fail);
+                    if (is_array($value)) {
+                        $this->validateUniqueItems($attribute, $value, $fail);
+                    }
                 },
             ],
-            'items.*.asset_id' => ['required', 'exists:assets,id'],
+            'items.*.asset_id' => ['required_with:items', 'exists:assets,id'],
             'items.*.comments' => ['nullable', 'string'],
         ];
     }
