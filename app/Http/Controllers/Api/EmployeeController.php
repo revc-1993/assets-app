@@ -110,10 +110,10 @@ class EmployeeController extends Controller
     {
         $employee = Employee::find($id);
         if (!$employee) {
-            return response()->json(['message' => 'Empleado no encontrado'], 404);
+            return $this->errorResponse(null, 'Empleado no encontrado.', 404);
         }
 
         $employee->delete();
-        return response()->json(['message' => 'Empleado eliminado']);
+        return $this->successResponse('Empleado eliminado exitosamente', 200);
     }
 }

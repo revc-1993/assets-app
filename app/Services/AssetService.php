@@ -72,4 +72,11 @@ final class AssetService
             ->orWhere('serie', $searchTerm)
             ->first();
     }
+
+    public function updateEsbyeRegistration(Asset $asset)
+    {
+        return $asset->update([
+            'registered_esbye' => !$asset['registered_esbye']
+        ]);
+    }
 }

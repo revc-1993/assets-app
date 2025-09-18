@@ -3,9 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Asset;
-use Illuminate\Http\Request;
 use App\Services\AssetService;
-use App\Http\Requests\AssetRequest;
 use App\Http\Controllers\Controller;
 
 class AssetController extends Controller
@@ -30,10 +28,22 @@ class AssetController extends Controller
         $asset = $this->assetService->findAssetByCodeOrSerie($searchTerm);
 
         if (!$asset) {
-            return response()->json(['message' => 'Bien no encontrado'], 404);
+            return $this->errorResponse(null, 'Bien no encontrado', 404);
         }
 
-        return response()->json($asset);
+        return $this->successResponse($asset, 'Bien encontrado correctamente');
+    }
+
+    public function updateEsbyeState(int $id)
+    {
+        $asset = Asset::find($id);
+        if (!$asset) {
+            return $this->errorResponse(null, 'Bien no encontrado', 404);
+        }
+
+        $asset = $this->assetService->updateEsbyeRegistration($asset);
+
+        return $this->successResponse($asset, 'Bien actualizado correctamente');
     }
 
     // *************** CRUD BÁSICO PARA BIENES ***************
