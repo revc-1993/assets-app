@@ -23,7 +23,7 @@ Route::prefix('v1')->group(function () {
 
         // Rutas para los activos
         Route::get('assets/search/{searchTerm}', [AssetController::class, 'search'])->name('assets.search');
-        Route::apiResource('assets', AssetController::class);
+        Route::apiResource('assets', AssetController::class)->except(['store', 'update', 'destroy']);
 
         // Rutas de recursos para departamentos, empleados y EOD
         Route::apiResource('departments', DepartmentController::class);
