@@ -2,8 +2,11 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\TransactionTypeConstants as TransactionTypes;
+use App\Models\Transaction;
 
+/**
+ * @mixin \Illuminate\Foundation\Http\FormRequest
+ */
 class TransactionUpdateRequest extends BaseFormRequest
 {
     /**
@@ -65,15 +68,10 @@ class TransactionUpdateRequest extends BaseFormRequest
     private function validateTransactionType($attribute, $value, $fail)
     {
         // Obtiene la instancia de la transacción que se está actualizando
-        $transaction = $this->route('transaction');
+        $transaction = Transaction::find(request()->route('transaction'));
         $currentTypeId = $transaction['transaction_type_id'];
 
-        // Regla 1: No permitir la edición de transacciones de tipo 'Ingreso' o 'Ajuste'.
-        if ($currentTypeId === TransactionTypes::TYPE_INCOME || $currentTypeId === TransactionTypes::TYPE_ADJUSTMENT) {
-            $fail('No se puede editar una transacción de tipo Ingreso o Ajuste.');
-        }
-
-        // Regla 2: No permitir cambiar el tipo de transacción en una edición.
+        // Regla 1: No permitir cambiar el tipo de transacción en una edición.
         if ($value !== $currentTypeId) {
             $fail('El tipo de transacción no puede ser modificado.');
         }

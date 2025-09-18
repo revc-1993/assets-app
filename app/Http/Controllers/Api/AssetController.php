@@ -10,6 +10,8 @@ use App\Http\Controllers\Controller;
 
 class AssetController extends Controller
 {
+    use \App\Traits\ApiResponse;
+
     protected $assetService;
 
     public function __construct(AssetService $assetService)
@@ -39,16 +41,28 @@ class AssetController extends Controller
     // Listar todos los bienes
     public function index()
     {
-        return response()->json(Asset::all());
+        $assets = Asset::all();
+
+        if (!$assets) {
+            return $this->errorResponse(null, 'Error de bienes', 404);
+        }
+
+        if ($assets->isEmpty()) {
+            return $this->successResponse($assets, 'No hay bienes disponibles');
+        }
+
+        return $this->successResponse($assets, 'Lista de bienes obtenida correctamente');
     }
 
     // Mostrar un bien específico
     public function show(int $id)
     {
         $asset = Asset::find($id);
+
         if (!$asset) {
-            return response()->json(['message' => 'Bien no encontrado'], 404);
+            return $this->errorResponse(null, 'Bien no encontrado', 404);
         }
-        return response()->json($asset);
+
+        return $this->successResponse($asset, 'Bien encontrado');
     }
 }

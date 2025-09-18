@@ -9,6 +9,8 @@ use App\Http\Controllers\Controller;
 
 class EmployeeController extends Controller
 {
+    use \App\Traits\ApiResponse;
+
     /**
      * @var EmployeeService
      */
@@ -30,18 +32,28 @@ class EmployeeController extends Controller
         $employee = $this->employeeService->findEmployeeByDniOrName($searchTerm);
 
         if (!$employee) {
-            return response()->json(['message' => 'Empleado no encontrado'], 404);
+            return $this->errorResponse(null, 'Empleado no encontrado.', 404);
         }
 
-        return response()->json($employee, 200);
+        return $this->successResponse($employee, 'Empleado encontrado');
     }
 
-    // *************** CRUD BÁSICO PARA BIENES ***************
+    // *************** CRUD BÁSICO PARA EMPLEADOS ***************
 
     // Listar todos los empleados
     public function index()
     {
-        return response()->json(Employee::all());
+        $employees = Employee::all();
+
+        if (!$employees) {
+            return $this->errorResponse(null, 'Error de funcionarios', 404);
+        }
+
+        if ($employees->isEmpty()) {
+            return $this->successResponse($employees, 'No hay empleados disponibles');
+        }
+
+        return $this->successResponse($employees, 'Lista de empleados obtenida correctamente');
     }
 
     // Mostrar un empleado específico
@@ -49,9 +61,10 @@ class EmployeeController extends Controller
     {
         $employee = Employee::find($id);
         if (!$employee) {
-            return response()->json(['message' => 'Empleado no encontrado'], 404);
+            return $this->errorResponse(null, 'Empleado no encontrado.', 404);
         }
-        return response()->json($employee);
+
+        return $this->successResponse($employee, 'Empleado encontrado');
     }
 
     // Crear un nuevo empleado
@@ -64,9 +77,11 @@ class EmployeeController extends Controller
             'email' => 'nullable|email|max:100',
             // Agrega aquí otras validaciones según tu modelo
         ]);
+        $validated['names'] = $validated['first_names'] . " " . $validated['last_names'];
 
         $employee = Employee::create($validated);
-        return response()->json($employee, 201);
+
+        return $this->successResponse($employee, 'Empleado creado exitosamente', 201);
     }
 
     // Actualizar un empleado existente
@@ -74,7 +89,7 @@ class EmployeeController extends Controller
     {
         $employee = Employee::find($id);
         if (!$employee) {
-            return response()->json(['message' => 'Empleado no encontrado'], 404);
+            return $this->errorResponse(null, 'Empleado no encontrado.', 404);
         }
 
         $validated = $request->validate([
@@ -85,8 +100,9 @@ class EmployeeController extends Controller
             // Agrega aquí otras validaciones según tu modelo
         ]);
 
+        $validated['names'] = $validated['first_names'] . " " . $validated['last_names'];
         $employee->update($validated);
-        return response()->json($employee);
+        return $this->successResponse($employee, 'Empleado actualizado exitosamente', 200);
     }
 
     // Eliminar un empleado

@@ -7,11 +7,10 @@ use App\Http\Controllers\Controller;
 use App\Services\TransactionService;
 use App\Http\Requests\TransactionStoreRequest;
 use App\Http\Requests\TransactionUpdateRequest;
-use App\Traits\ApiResponse;
 
 class TransactionController extends Controller
 {
-    use ApiResponse;
+    use \App\Traits\ApiResponse;
     protected TransactionService $service;
 
     public function __construct(TransactionService $service)
@@ -32,8 +31,12 @@ class TransactionController extends Controller
             'transactionDetails.asset:id,esbye_code,serie,description,model,condition'
         ])->get();
 
+        if (!$transactions) {
+            return $this->errorResponse(null, 'Error de transacciones', 404);
+        }
+
         if ($transactions->isEmpty()) {
-            return $this->errorResponse(null, 'Transacciones no encontradas', 404);
+            return $this->successResponse($transactions, 'No hay transacciones disponibles');
         }
 
         return $this->successResponse($transactions, 'Transacciones encontradas');
@@ -63,8 +66,8 @@ class TransactionController extends Controller
     public function store(TransactionStoreRequest $request)
     {
         $data = $request->validated();
-        $data['created_by'] = $request->user()->id ?? null;
-        $data['action'] = $data['action'] ?? 'created';
+        $data['created_by'] = $request->user->id ?? null;
+        $data['action'] = 'created';
 
         $items = $request['items'] ?? [];
 
@@ -82,7 +85,7 @@ class TransactionController extends Controller
         }
 
         $data = $request->validated();
-        $data['action'] = $data['action'] ?? 'updated';
+        $data['action'] = 'updated';
 
         $items = $request['items'] ?? [];
 
