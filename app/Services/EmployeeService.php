@@ -14,7 +14,7 @@ final class EmployeeService
      */
     public function findEmployeeByDniOrName(string $searchTerm)
     {
-        return Employee::where('id_card', $searchTerm)
+        return Employee::where('dni', $searchTerm)
             ->orWhere('names', 'like', '%' . $searchTerm . '%')
             ->get();
     }
